@@ -1,1 +1,0 @@
-https://docs.microsoft.com/en-us/learn/modules/detect-analyze-faces/3-create-face-solutions
