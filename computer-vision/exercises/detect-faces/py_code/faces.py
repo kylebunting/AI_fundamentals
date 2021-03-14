@@ -25,23 +25,29 @@ def show_faces(image_path, detected_faces, show_id=False, show_attributes=False)
             if show_attributes:
                 # Annotate with face attributes (only age and emotion are used in this sample)
                 detected_attributes = face.face_attributes.as_dict()
+                print(detected_attributes)
                 age = 'age unknown' if 'age' not in detected_attributes.keys() else int(detected_attributes['age'])
                 gender = 'Person' if 'gender' not in detected_attributes.keys() else detected_attributes['gender']
                 annotations = '{}-year-old {}'.format(age, gender)
                 txt_lines = 1
                 if 'hair' in detected_attributes.keys():
+                    annotations += '\nHair:'
                     for hair_type in detected_attributes['hair']:
                         txt_lines += 1
                         annotations += '\n - {}: {}'.format(hair_type, detected_attributes['hair'][hair_type])
                 if 'facial_hair' in detected_attributes.keys():
+                    annotations += '\nFacial Hair:'
                     for facial_hair_type in detected_attributes['facial_hair']:
                         txt_lines += 1
                         annotations += '\n - {}: {}'.format(facial_hair_type, detected_attributes['facial_hair'][facial_hair_type])
                 if 'emotion' in detected_attributes.keys():
+                    annotations += '\nEmotions:'
                     for emotion_name in detected_attributes['emotion']:
                         txt_lines += 1
                         annotations += '\n - {}: {}'.format(emotion_name, detected_attributes['emotion'][emotion_name])
-                plt.annotate(annotations,(r.left, (r.top + r.height + (txt_lines * 22))), backgroundcolor='yellow')
+                
+                att_left = r.left if num_faces > 1 else (r.left + r.width)
+                plt.annotate(annotations,(att_left, (r.top + r.height + (txt_lines * 10))), backgroundcolor='yellow')
 
         # Plot the image
         fig.suptitle(prediction)
@@ -83,33 +89,6 @@ def show_similar_faces(image_1_path, image_1_face, image_2_path, image_2_faces, 
             plt.annotate('Match!',(r.left, r.top + r.height + 35), backgroundcolor='white')
         else:
             draw.rectangle(bounding_box, outline='red', width=5)
+            plt.annotate('Not A Match!',(r.left, r.top + r.height + 35), backgroundcolor='orange')
     plt.imshow(img2)
     plt.show()
-
-def show_recognized_faces(image_path, detected_faces, recognized_face_names):
-    import matplotlib.pyplot as plt
-    from PIL import Image, ImageDraw
-
-    # Open an image
-    img = Image.open(image_path)
-
-    # Create a figure to display the results
-    fig = plt.figure(figsize=(8, 6))
-
-    if detected_faces:
-        # If there are faces, how many?
-        num_faces = len(recognized_face_names)
-        caption = ' (' + str(num_faces) + ' faces recognized)'
-        # Draw a rectangle around each detected face
-        for face in detected_faces:
-            r = face.face_rectangle
-            bounding_box = ((r.left, r.top), (r.left + r.width, r.top + r.height))
-            draw = ImageDraw.Draw(img)
-            draw.rectangle(bounding_box, outline='magenta', width=5)
-            if face.face_id in recognized_face_names:
-                plt.annotate(recognized_face_names[face.face_id],
-                             (r.left, r.top + r.height + 15), backgroundcolor='white')
-        fig.suptitle(caption)
-
-    plt.axis('off')
-    plt.imshow(img)
